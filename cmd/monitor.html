@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPSCZ - Datos en Tiempo Real</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e1e;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        #log {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: #000;
+            border: 1px solid #333;
+            padding: 10px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 2px;
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+
+        #status {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .connected {
+            color: #00ff00;
+        }
+
+        .disconnected {
+            color: #ff0000;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛰️ GPSCZ - Monitor</h1>
+    <div id="status" class="disconnected">Estado: Desconectado</div>
+    <div id="log"></div>
+
+    <script>
+        const logDiv = document.getElementById('log');
+        const statusDiv = document.getElementById('status');
+        let ws;
+
+        function connect() {
+            ws = new WebSocket('ws://' + window.location.host + '/ws');
+
+            ws.onopen = function () {
+                statusDiv.textContent = 'Estado: Conectado';
+                statusDiv.className = 'connected';
+                appendLog('Sistema: Conectado al servidor WebSocket');
+            };
+
+            ws.onmessage = function (event) {
+                appendLog(event.data);
+            };
+
+            ws.onclose = function () {
+                statusDiv.textContent = 'Estado: Desconectado (Reconectando...)';
+                statusDiv.className = 'disconnected';
+                appendLog('Sistema: Conexión perdida. Reconectando en 3s...');
+                setTimeout(connect, 3000);
+            };
+
+            ws.onerror = function (err) {
+                console.error('Error en el socket: ', err.message, 'Cerrando socket');
+                ws.close();
+            };
+        }
+
+        function appendLog(message) {
+            const entry = document.createElement('div');
+            entry.className = 'entry';
+
+            const timestamp = document.createElement('span');
+            timestamp.className = 'timestamp';
+            timestamp.textContent = new Date().toLocaleTimeString();
+
+            const content = document.createElement('span');
+            content.textContent = message;
+
+            entry.appendChild(timestamp);
+            entry.appendChild(content);
+
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        connect();
+    </script>
+</body>
+
+</html>

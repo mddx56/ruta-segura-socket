@@ -1,0 +1,51 @@
+basePath: /
+host: localhost:6060
+info:
+  contact: {}
+  description: Servidor TCP para GPS GT06. Persiste posiciones via gRPC al monitoring-api.
+  title: Motos Socket Server API
+  version: "2.0"
+paths:
+  /debug/redis-devices:
+    get:
+      description: Devuelve la lista de IMEIs cacheados en Redis y el estado de la
+        flag de vigencia.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List Devices in Redis Cache
+      tags:
+      - Debug
+  /health:
+    get:
+      description: Devuelve el estado del servidor TCP y del worker pool.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Check API Health
+      tags:
+      - System
+  /metrics:
+    get:
+      description: Expone métricas en formato Prometheus para Grafana scraping.
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: metrics
+          schema:
+            type: string
+      summary: Prometheus Metrics
+      tags:
+      - System
+swagger: "2.0"

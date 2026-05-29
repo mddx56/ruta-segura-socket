@@ -1,0 +1,42 @@
+# Archivos binarios y ejecutables
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+
+# Archivos de objeto
+*.o
+*.a
+
+# Archivos temporales y compilados
+/_test/
+/test.out
+/tmp/
+*.test
+
+# Archivos de registro
+*.log
+
+# Directorios y archivos generados por IDEs o editores
+.idea/
+.vscode/
+*.swp
+.vscode-server/
+*.log
+*.i
+
+# Archivos de respaldo
+*~
+\#*\#
+
+# Dependencias y archivos generados por Go
+#/go.mod
+/go.sum
+/bin/
+/vendor/
+/Godeps/
+.vscode/
+.idea/
+server
+.env

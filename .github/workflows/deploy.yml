@@ -1,0 +1,59 @@
+name: Deploy Socket Server to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24' 
+
+      - name: Build Go App
+        run: |
+          # Sincronizamos las dependencias primero
+          go mod tidy
+          go mod download
+          
+          # Compilamos el binario del Socket Server
+          # Lo nombramos de forma temporal (con sufijo -new) para evitar el error 'text file busy' al subirlos usando scp
+          GOOS=linux GOARCH=amd64 go build -o motos-socket-new ./cmd/main.go
+          
+      - name: Copy binaries to DigitalOcean
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          password: ${{ secrets.DO_PASSWORD }}
+          source: "motos-socket-new,.env"
+          target: "/home/root/motos/motos-socket"
+
+      - name: Stop, Migrate and Restart Service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          password: ${{ secrets.DO_PASSWORD }}
+          script: |
+            cd /home/root/motos/motos-socket
+            
+            # 1. Detenemos el servicio actual
+            sudo systemctl stop motos-socket
+            
+            # 2. Reemplazamos el binario viejo con el nuevo de forma segura
+            mv motos-socket-new motos-socket
+            
+            # 3. Damos permisos de ejecución
+            chmod +x motos-socket
+            
+            # 4. Iniciamos y revisamos que todo esté OK
+            sudo systemctl start motos-socket
+            sudo systemctl status motos-socket --no-pager

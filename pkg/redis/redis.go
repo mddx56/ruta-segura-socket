@@ -1,0 +1,63 @@
+package redis
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/redis/go-redis/v9"
+)
+
+// RedisService define la interfaz para interactuar con Redis aplicando el Principio de Segregación de Interfaces (ISP).
+type RedisService interface {
+	Get(ctx context.Context, key string) (string, error)
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
+	Delete(ctx context.Context, key string) error
+	Client() *redis.Client // Expone el cliente en crudo para operaciones complejas como Pub/Sub
+}
+
+type redisService struct {
+	client *redis.Client
+}
+
+// NewRedisService inicializa y retorna el servicio de Redis.
+func NewRedisService(host string, port string) (RedisService, error) {
+	addr := fmt.Sprintf("%s:%s", host, port)
+	
+	client := redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: "", // Contraseña vacía por defecto para entorno local
+		DB:       0,  // Base de datos por defecto
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := client.Ping(ctx).Err(); err != nil {
+		log.Printf("⚠️ No se pudo conectar a Redis en motos-socket %s: %v", addr, err)
+		return nil, err
+	}
+
+	log.Printf("🚀 motos-socket conectado a Redis exitosamente en %s", addr)
+
+	return &redisService{
+		client: client,
+	}, nil
+}
+
+func (r *redisService) Get(ctx context.Context, key string) (string, error) {
+	return r.client.Get(ctx, key).Result()
+}
+
+func (r *redisService) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+	return r.client.Set(ctx, key, value, expiration).Err()
+}
+
+func (r *redisService) Delete(ctx context.Context, key string) error {
+	return r.client.Del(ctx, key).Err()
+}
+
+func (r *redisService) Client() *redis.Client {
+	return r.client
+}

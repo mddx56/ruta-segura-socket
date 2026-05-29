@@ -1,0 +1,75 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Servidor TCP para GPS GT06. Persiste posiciones via gRPC al monitoring-api.",
+        "title": "Motos Socket Server API",
+        "contact": {},
+        "version": "2.0"
+    },
+    "host": "localhost:6060",
+    "basePath": "/",
+    "paths": {
+        "/debug/redis-devices": {
+            "get": {
+                "description": "Devuelve la lista de IMEIs cacheados en Redis y el estado de la flag de vigencia.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Debug"
+                ],
+                "summary": "List Devices in Redis Cache",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Devuelve el estado del servidor TCP y del worker pool.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "Check API Health",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/metrics": {
+            "get": {
+                "description": "Expone métricas en formato Prometheus para Grafana scraping.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "Prometheus Metrics",
+                "responses": {
+                    "200": {
+                        "description": "metrics",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
