@@ -64,7 +64,7 @@ func main() {
 	slog.Info("Cliente gRPC conectado", "addr", cfg.GRPCAddr)
 
 	// ── Redis Client ──────────────────────────────────────────────────────────
-	redisClient, err := redis.NewRedisService(cfg.RedisHost, cfg.RedisPort)
+	redisClient, err := redis.NewRedisService(cfg.RedisHost, cfg.RedisPort, cfg.RedisPassword)
 	if err != nil {
 		log.Fatal("Error conectando a Redis:", err)
 	}
@@ -151,4 +151,3 @@ func startHTTPServer(cfg *config.Config, tcpSrv *tcp.Server, pw *worker.Position
 	}()
 	return srv
 }
-

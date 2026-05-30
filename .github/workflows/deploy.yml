@@ -3,7 +3,7 @@ name: Deploy Socket Server to DigitalOcean
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   deploy:
@@ -15,26 +15,56 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24' 
+          go-version: "1.24"
 
       - name: Build Go App
         run: |
           # Sincronizamos las dependencias primero
           go mod tidy
           go mod download
-          
+
           # Compilamos el binario del Socket Server
           # Lo nombramos de forma temporal (con sufijo -new) para evitar el error 'text file busy' al subirlos usando scp
-          GOOS=linux GOARCH=amd64 go build -o motos-socket-new ./cmd/main.go
-          
+          GOOS=linux GOARCH=amd64 go build -o ruta-socket-new ./cmd/main.go
+
       - name: Copy binaries to DigitalOcean
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           password: ${{ secrets.DO_PASSWORD }}
-          source: "motos-socket-new,.env"
-          target: "/home/root/motos/motos-socket"
+          source: "ruta-socket-new,.env"
+          target: "/home/root/rutasegura/ruta-segura-socket"
+
+      - name: Setup Systemd Service (first time)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          password: ${{ secrets.DO_PASSWORD }}
+          script: |
+            mkdir -p /home/root/rutasegura/ruta-segura-socket
+
+            if [ ! -f /etc/systemd/system/ruta-segura-socket.service ]; then
+              cat > /etc/systemd/system/ruta-segura-socket.service << 'EOF'
+            [Unit]
+            Description=Ruta Segura Socket Server
+            After=network.target
+
+            [Service]
+            Type=simple
+            User=root
+            WorkingDirectory=/home/root/rutasegura/ruta-segura-socket
+            ExecStart=/home/root/rutasegura/ruta-segura-socket/ruta-socket
+            Restart=on-failure
+            RestartSec=5
+
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+              systemctl daemon-reload
+              systemctl enable ruta-segura-socket
+            fi
 
       - name: Stop, Migrate and Restart Service
         uses: appleboy/ssh-action@v1.0.3
@@ -43,17 +73,17 @@ jobs:
           username: ${{ secrets.DO_USERNAME }}
           password: ${{ secrets.DO_PASSWORD }}
           script: |
-            cd /home/root/motos/motos-socket
-            
+            cd /home/root/rutasegura/ruta-segura-socket
+
             # 1. Detenemos el servicio actual
-            sudo systemctl stop motos-socket
-            
+            sudo systemctl stop ruta-segura-socket
+
             # 2. Reemplazamos el binario viejo con el nuevo de forma segura
-            mv motos-socket-new motos-socket
-            
+            mv ruta-socket-new ruta-socket
+
             # 3. Damos permisos de ejecución
-            chmod +x motos-socket
-            
+            chmod +x ruta-socket
+
             # 4. Iniciamos y revisamos que todo esté OK
-            sudo systemctl start motos-socket
-            sudo systemctl status motos-socket --no-pager
+            sudo systemctl start ruta-segura-socket
+            sudo systemctl status ruta-segura-socket --no-pager

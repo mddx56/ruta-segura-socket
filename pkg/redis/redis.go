@@ -22,13 +22,13 @@ type redisService struct {
 }
 
 // NewRedisService inicializa y retorna el servicio de Redis.
-func NewRedisService(host string, port string) (RedisService, error) {
+func NewRedisService(host string, port string, password string) (RedisService, error) {
 	addr := fmt.Sprintf("%s:%s", host, port)
-	
+
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
-		Password: "", // Contraseña vacía por defecto para entorno local
-		DB:       0,  // Base de datos por defecto
+		Password: password,
+		DB:       0,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
