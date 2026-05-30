@@ -86,7 +86,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:6060",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Motos Socket Server API",
+	Title:            "RutaSegura Server Socket",
 	Description:      "Servidor TCP para GPS GT06. Persiste posiciones via gRPC al monitoring-api.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

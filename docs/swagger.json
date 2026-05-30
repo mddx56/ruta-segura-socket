@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "Servidor TCP para GPS GT06. Persiste posiciones via gRPC al monitoring-api.",
-        "title": "Motos Socket Server API",
+        "title": "RutaSegura Server Socket",
         "contact": {},
         "version": "2.0"
     },

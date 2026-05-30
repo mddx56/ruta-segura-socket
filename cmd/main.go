@@ -1,4 +1,4 @@
-// @title Motos Socket Server API
+// @title RutaSegura Server Socket
 // @version 2.0
 // @description Servidor TCP para GPS GT06. Persiste posiciones via gRPC al monitoring-api.
 // @host localhost:6060

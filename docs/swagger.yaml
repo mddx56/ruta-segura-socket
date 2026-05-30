@@ -3,7 +3,7 @@ host: localhost:6060
 info:
   contact: {}
   description: Servidor TCP para GPS GT06. Persiste posiciones via gRPC al monitoring-api.
-  title: Motos Socket Server API
+  title: RutaSegura Server Socket
   version: "2.0"
 paths:
   /debug/redis-devices:
